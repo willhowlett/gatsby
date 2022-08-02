@@ -32,6 +32,7 @@ export interface IImageMetadata {
   format?: string
   density?: number
   dominantColor?: string
+  hasAlpha?: boolean
 }
 
 const metadataCache = new Map<string, IImageMetadata>()
@@ -50,23 +51,24 @@ export async function getImageMetadata(
   let metadata: IImageMetadata | undefined
   const METADATA_KEY = `metadata-${file.internal.contentDigest}`
 
-  if (cache) {
-    // Use plugin cache
-    metadata = await cache.get(METADATA_KEY)
-  } else {
-    // Use in-memory cache instead
-    metadata = metadataCache.get(METADATA_KEY)
-  }
-  if (metadata && process.env.NODE_ENV !== `test`) {
-    return metadata
-  }
+  // if (cache) {
+  //   // Use plugin cache
+  //   metadata = await cache.get(METADATA_KEY)
+  // } else {
+  //   // Use in-memory cache instead
+  //   metadata = metadataCache.get(METADATA_KEY)
+  // }
+  // if (metadata && process.env.NODE_ENV !== `test`) {
+  //   return metadata
+  // }
 
   try {
     const pipeline = sharp({ failOnError: !!getPluginOptions().failOnError })
 
     fs.createReadStream(file.absolutePath).pipe(pipeline)
 
-    const { width, height, density, format } = await pipeline.metadata()
+    const { width, height, density, format, hasAlpha } =
+      await pipeline.metadata()
 
     // Downsize the image before calculating the dominant color
     const buffer = await pipeline
@@ -83,7 +85,14 @@ export async function getImageMetadata(
       ? rgbToHex(dominant.r, dominant.g, dominant.b)
       : `#000000`
 
-    metadata = { width, height, density, format, dominantColor }
+    metadata = {
+      width,
+      height,
+      density,
+      format,
+      dominantColor,
+      hasAlpha,
+    }
     if (cache) {
       await cache.set(METADATA_KEY, metadata)
     } else {
@@ -293,7 +302,9 @@ export async function generateImageData({
     IGatsbyImageData,
     "backgroundColor" | "layout" | "placeholder" | "images"
   > &
-    Partial<Pick<IGatsbyImageData, "width" | "height">> = {
+    Partial<Pick<IGatsbyImageData, "width" | "height">> & {
+      isTransparent?: boolean
+    } = {
     layout,
     placeholder: undefined,
     backgroundColor,
@@ -414,5 +425,8 @@ export async function generateImageData({
       imageProps.width = args.width || primaryImage.width || 1
       imageProps.height = (imageProps.width || 1) / primaryImage.aspectRatio
   }
+
+  imageProps.isTransparent = metadata.hasAlpha
+
   return imageProps as IGatsbyImageData
 }

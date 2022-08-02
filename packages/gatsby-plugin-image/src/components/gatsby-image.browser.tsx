@@ -58,6 +58,7 @@ export interface IGatsbyImageData {
   backgroundColor?: string
   images: Pick<MainImageProps, "sources" | "fallback">
   placeholder?: Pick<PlaceholderProps, "sources" | "fallback">
+  isTransparent?: boolean
 }
 
 const GatsbyImageHydrator: FC<GatsbyImageProps> = function GatsbyImageHydrator({

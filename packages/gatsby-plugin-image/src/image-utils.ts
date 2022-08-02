@@ -104,6 +104,7 @@ export interface IGatsbyImageHelperArgs {
   breakpoints?: Array<number>
   backgroundColor?: string
   aspectRatio?: number
+  isTransparent?: boolean
 }
 
 const warn = (message: string): void => console.warn(message)
@@ -231,6 +232,7 @@ export function generateImageData(
     filename,
     reporter = { warn },
     backgroundColor,
+    isTransparent,
     placeholderURL,
   } = args
 
@@ -335,6 +337,7 @@ export function generateImageData(
     images: result,
     layout,
     backgroundColor,
+    isTransparent,
   }
 
   if (placeholderURL) {
