@@ -300,7 +300,7 @@ export async function generateImageData({
   }
   const imageProps: Pick<
     IGatsbyImageData,
-    "backgroundColor" | "layout" | "placeholder" | "images"
+    "backgroundColor" | "layout" | "placeholder" | "images" | "isTransparent"
   > &
     Partial<Pick<IGatsbyImageData, "width" | "height">> = {
     layout,
