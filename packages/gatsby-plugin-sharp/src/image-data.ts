@@ -51,16 +51,16 @@ export async function getImageMetadata(
   let metadata: IImageMetadata | undefined
   const METADATA_KEY = `metadata-${file.internal.contentDigest}`
 
-  // if (cache) {
-  //   // Use plugin cache
-  //   metadata = await cache.get(METADATA_KEY)
-  // } else {
-  //   // Use in-memory cache instead
-  //   metadata = metadataCache.get(METADATA_KEY)
-  // }
-  // if (metadata && process.env.NODE_ENV !== `test`) {
-  //   return metadata
-  // }
+  if (cache) {
+    // Use plugin cache
+    metadata = await cache.get(METADATA_KEY)
+  } else {
+    // Use in-memory cache instead
+    metadata = metadataCache.get(METADATA_KEY)
+  }
+  if (metadata && process.env.NODE_ENV !== `test`) {
+    return metadata
+  }
 
   try {
     const pipeline = sharp({ failOnError: !!getPluginOptions().failOnError })
@@ -302,9 +302,7 @@ export async function generateImageData({
     IGatsbyImageData,
     "backgroundColor" | "layout" | "placeholder" | "images"
   > &
-    Partial<Pick<IGatsbyImageData, "width" | "height">> & {
-      isTransparent?: boolean
-    } = {
+    Partial<Pick<IGatsbyImageData, "width" | "height">> = {
     layout,
     placeholder: undefined,
     backgroundColor,
